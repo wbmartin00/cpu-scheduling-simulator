@@ -192,13 +192,22 @@ def simulate_mlfq(processes: List[PCB], quanta: List[int] = [8, 16]) -> dict:
 
 def write_metrics_to_csv(metrics_list: List[dict], filename: str = 'metrics.csv'):
     """
-    Write a list of metric dicts to a CSV file for easy import into R.
+    Write list of metric dicts to a CSV file
     """
-    # Use all keys present in any metric dict for the header
-    fieldnames = set()
+    if not metrics_list:
+        return
+    # Define the primary metric columns in the desired order
+    primary = ['Algorithm', 'AWT', 'ATT', 'CPU_Utilization', 'Throughput']
+    # Collect all keys from the metrics dicts
+    all_keys = set()
     for m in metrics_list:
-        fieldnames.update(m.keys())
-    fieldnames = list(fieldnames)
+        all_keys.update(m.keys())
+    # Determine extra columns not in primary list
+    extras = [k for k in all_keys if k not in primary]
+    extras.sort()
+    # Combine into final header order
+    fieldnames = primary + extras
+    # Write CSV
     with open(filename, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
